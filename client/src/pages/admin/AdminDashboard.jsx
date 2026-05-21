@@ -28,7 +28,25 @@ export default function AdminDashboard() {
   }, []);
 
   if (loading) return <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading analytics...</div>;
-  if (!analytics) return null;
+  if (!analytics) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', maxWidth: 400, margin: '4rem auto' }} className="glass-card">
+        <p style={{ color: 'var(--accent-red)', fontWeight: 600, marginBottom: '0.5rem' }}>Failed to load dashboard analytics</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+          This is typically caused by a database timeout or backend connection issue.
+        </p>
+        <button className="btn-primary" style={{ justifyContent: 'center', width: '100%' }} onClick={() => {
+          setLoading(true);
+          adminAPI.getAnalytics()
+            .then(r => setAnalytics(r.data.analytics))
+            .catch(() => toast.error('Failed to load analytics'))
+            .finally(() => setLoading(false));
+        }}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const { seats, bookings, users } = analytics;
   const occupancy = seats.total ? Math.round((seats.occupied / seats.total) * 100) : 0;
