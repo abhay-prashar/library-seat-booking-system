@@ -12,6 +12,16 @@ const server = http.createServer(app);
 
 initSocket(server);
 
+// Environment variable validation
+if (!process.env.MONGO_URI) {
+  console.error('CRITICAL ERROR: MONGO_URI environment variable is missing.');
+  process.exit(1);
+}
+if (!process.env.JWT_SECRET) {
+  console.error('CRITICAL ERROR: JWT_SECRET environment variable is missing.');
+  process.exit(1);
+}
+
 connectDB().then(() => {
   server.listen(PORT, () => {
     logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
@@ -19,6 +29,7 @@ connectDB().then(() => {
   });
 }).catch((err) => {
   logger.error('Failed to connect to database:', err);
+  console.error('Failed to connect to database:', err);
   process.exit(1);
 });
 
