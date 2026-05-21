@@ -72,9 +72,9 @@ export default function AdminSeats() {
 
       {/* Section filter */}
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-        <button onClick={() => setSectionFilter('')} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: !sectionFilter ? '#6c63ff' : 'var(--border)', background: !sectionFilter ? 'rgba(108,99,255,0.15)' : 'transparent', color: !sectionFilter ? '#a78bfa' : 'var(--text-secondary)' }}>All</button>
+        <button onClick={() => setSectionFilter('')} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: !sectionFilter ? 'var(--accent)' : 'var(--border)', background: !sectionFilter ? 'rgba(37,99,235,0.08)' : 'transparent', color: !sectionFilter ? 'var(--accent)' : 'var(--text-secondary)' }}>All</button>
         {sections.map(s => (
-          <button key={s._id} onClick={() => setSectionFilter(s._id)} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: sectionFilter === s._id ? '#6c63ff' : 'var(--border)', background: sectionFilter === s._id ? 'rgba(108,99,255,0.15)' : 'transparent', color: sectionFilter === s._id ? '#a78bfa' : 'var(--text-secondary)' }}>
+          <button key={s._id} onClick={() => setSectionFilter(s._id)} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: sectionFilter === s._id ? 'var(--accent)' : 'var(--border)', background: sectionFilter === s._id ? 'rgba(37,99,235,0.08)' : 'transparent', color: sectionFilter === s._id ? 'var(--accent)' : 'var(--text-secondary)' }}>
             {s.name}
           </button>
         ))}

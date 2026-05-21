@@ -31,11 +31,18 @@ const expireEndedBookings = async () => {
     const seatIds = expiredBookings.map((b) => b.seat);
     const userIds = expiredBookings.map((b) => b.user);
 
-    await Booking.updateMany(
-      { _id: { $in: bookingIds } },
-      { $set: { status: 'expired' } },
-      { session }
-    );
+    for (const b of expiredBookings) {
+      if (b.checkInTime) {
+        b.status = 'expired';
+        b.fineAmount = 100;
+        b.fineReason = 'Overstay violation: did not check out before booking end time';
+      } else {
+        b.status = 'no_show';
+        b.fineAmount = 50;
+        b.fineReason = 'No-show violation: did not check in within grace period';
+      }
+      await b.save({ session });
+    }
 
     await Seat.updateMany(
       { _id: { $in: seatIds } },
@@ -94,7 +101,14 @@ const cancelNoShows = async () => {
 
     await Booking.updateMany(
       { _id: { $in: bookingIds } },
-      { $set: { status: 'no_show', cancellationReason: 'Auto-cancelled: no check-in within grace period' } },
+      {
+        $set: {
+          status: 'no_show',
+          cancellationReason: 'Auto-cancelled: no check-in within grace period',
+          fineAmount: 50,
+          fineReason: 'No-show violation: did not check in within grace period',
+        }
+      },
       { session }
     );
 

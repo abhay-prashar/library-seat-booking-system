@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { protect, restrictTo } = require('../middleware/auth');
 const { AppError } = require('../middleware/errorHandler');
-const { createBooking, cancelBooking, checkIn } = require('../services/bookingService');
+const { createBooking, cancelBooking, checkIn, checkOut } = require('../services/bookingService');
 const Booking = require('../models/Booking');
 
 const router = express.Router();
@@ -82,6 +82,31 @@ router.post('/:id/checkin', protect, async (req, res, next) => {
   try {
     const booking = await checkIn({ bookingId: req.params.id, userId: req.user._id });
     res.json({ success: true, message: 'Checked in successfully.', booking });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/bookings/:id/checkout - Check out of a booking
+router.post('/:id/checkout', protect, async (req, res, next) => {
+  try {
+    const booking = await checkOut({ bookingId: req.params.id, userId: req.user._id });
+    res.json({ success: true, message: 'Checked out successfully.', booking });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/bookings/:id/pay-fine - Pay outstanding fine
+router.post('/:id/pay-fine', protect, async (req, res, next) => {
+  try {
+    const booking = await Booking.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id, fineAmount: { $gt: 0 }, finePaid: false },
+      { $set: { finePaid: true } },
+      { new: true }
+    );
+    if (!booking) return next(new AppError('Unpaid fine not found for this booking.', 404));
+    res.json({ success: true, message: 'Fine paid successfully.', booking });
   } catch (err) {
     next(err);
   }

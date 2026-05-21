@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { seatsAPI, bookingsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { format, addHours } from 'date-fns';
-import { MapPin, Clock, Zap, X, CheckCircle, Armchair, Wifi } from 'lucide-react';
+import { MapPin, Clock, Zap, X, CheckCircle, Armchair, Wifi, LogOut, AlertTriangle } from 'lucide-react';
 
 const roundUpToNext30 = () => {
   const now = new Date();
@@ -23,11 +24,13 @@ const toLocalInput = (d) => {
 export default function SeatsPage() {
   const { user, refreshUser } = useAuth();
   const { on } = useSocket();
+  const navigate = useNavigate();
   const [sections, setSections] = useState([]);
   const [seats, setSeats] = useState([]);
   const [activeSection, setActiveSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeBooking, setActiveBooking] = useState(null);
+  const [unpaidFines, setUnpaidFines] = useState([]);
 
   // Booking modal state
   const [selected, setSelected] = useState(null);
@@ -38,14 +41,19 @@ export default function SeatsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [secRes, seatRes, activeRes] = await Promise.all([
+      const [secRes, seatRes, activeRes, historyRes] = await Promise.all([
         seatsAPI.getSections(),
         seatsAPI.getAll(activeSection ? { sectionId: activeSection } : {}),
         bookingsAPI.getActive(),
+        bookingsAPI.getMy({ limit: 100 }).catch(() => ({ data: { bookings: [] } }))
       ]);
       setSections(secRes.data.sections);
       setSeats(seatRes.data.seats);
       setActiveBooking(activeRes.data.booking);
+      
+      const unpaid = (historyRes?.data?.bookings || []).filter(b => b.fineAmount > 0 && !b.finePaid);
+      setUnpaidFines(unpaid);
+
       if (!activeSection && secRes.data.sections.length) {
         setActiveSection(secRes.data.sections[0]._id);
       }
@@ -82,6 +90,9 @@ export default function SeatsPage() {
 
   const openModal = (seat) => {
     if (!seat.isAvailable || seat.isMaintenance) return;
+    if (unpaidFines.length > 0) {
+      return toast.error('You have outstanding unpaid fines. Please pay them before booking a seat.');
+    }
     if (activeBooking) return toast.error('You already have an active booking. Cancel it first.');
     setSelected(seat);
     const s = roundUpToNext30();
@@ -128,6 +139,16 @@ export default function SeatsPage() {
     }
   };
 
+  const handleCheckOut = async () => {
+    try {
+      await bookingsAPI.checkOut(activeBooking._id);
+      toast.success('Checked out successfully!');
+      await fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Check-out failed');
+    }
+  };
+
   const filtered = seats.filter(s => !activeSection || s.section?._id === activeSection);
   const rows = [...new Set(filtered.map(s => s.row))].sort((a,b) => a-b);
 
@@ -142,25 +163,58 @@ export default function SeatsPage() {
         </p>
       </div>
 
+      {/* Unpaid fines warning banner */}
+      {unpaidFines.length > 0 && (
+        <div className="glass-card fade-in" style={{ 
+          padding: '1rem 1.25rem', 
+          marginBottom: '1.5rem', 
+          borderColor: 'rgba(239, 68, 68, 0.25)', 
+          background: 'rgba(239, 68, 68, 0.04)',
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '1rem', 
+          flexWrap: 'wrap' 
+        }}>
+          <AlertTriangle size={20} color="var(--accent-red)" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--accent-red)' }}>
+              Outstanding Balance Restriction
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              You have {unpaidFines.length} unpaid fine(s) totaling ₹{unpaidFines.reduce((sum, f) => sum + f.fineAmount, 0)}. You cannot book a new seat until your balance is cleared.
+            </div>
+          </div>
+          <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }} onClick={() => navigate('/fines')}>
+            Pay Fines
+          </button>
+        </div>
+      )}
+
       {/* Active booking banner */}
       {activeBooking && (
-        <div className="glass-card fade-in" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', borderColor: 'rgba(108,99,255,0.3)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <CheckCircle size={20} color="#6c63ff" />
+        <div className="glass-card fade-in" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', borderColor: 'rgba(37, 99, 235, 0.25)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <CheckCircle size={20} color="var(--accent)" />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Active Booking — Seat {activeBooking.seat?.seatNumber} · {activeBooking.section?.name}</div>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
               {format(new Date(activeBooking.startTime), 'dd MMM, h:mm a')} → {format(new Date(activeBooking.endTime), 'h:mm a')}
-              {activeBooking.checkInTime ? <span style={{ marginLeft: 8, color: '#22c55e' }}>✓ Checked in</span> : null}
+              {activeBooking.checkInTime ? <span style={{ marginLeft: 8, color: 'var(--accent-green)' }}>✓ Checked in</span> : null}
             </div>
           </div>
-          {!activeBooking.checkInTime && (
-            <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={handleCheckIn}>
-              <Zap size={14} /> Check In
+          {activeBooking.checkInTime ? (
+            <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', background: 'var(--accent-green)', borderColor: 'var(--accent-green)' }} onClick={handleCheckOut}>
+              <LogOut size={14} /> Check Out
             </button>
+          ) : (
+            <>
+              <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={handleCheckIn}>
+                <Zap size={14} /> Check In
+              </button>
+              <button className="btn-danger" style={{ fontSize: '0.8rem' }} onClick={handleCancel}>
+                <X size={14} /> Cancel
+              </button>
+            </>
           )}
-          <button className="btn-danger" style={{ fontSize: '0.8rem' }} onClick={handleCancel}>
-            <X size={14} /> Cancel
-          </button>
         </div>
       )}
 
@@ -169,9 +223,9 @@ export default function SeatsPage() {
         {sections.map(sec => (
           <button key={sec._id} onClick={() => setActiveSection(sec._id)}
             style={{ padding: '0.5rem 1.1rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, transition: 'all 0.18s',
-              borderColor: activeSection === sec._id ? '#6c63ff' : 'var(--border)',
-              background: activeSection === sec._id ? 'rgba(108,99,255,0.15)' : 'transparent',
-              color: activeSection === sec._id ? '#a78bfa' : 'var(--text-secondary)',
+              borderColor: activeSection === sec._id ? 'var(--accent)' : 'var(--border)',
+              background: activeSection === sec._id ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+              color: activeSection === sec._id ? 'var(--accent)' : 'var(--text-secondary)',
             }}>
             {sec.name}
           </button>
@@ -201,7 +255,7 @@ export default function SeatsPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
               {/* Entrance indicator */}
-              <div style={{ width: '80%', height: 6, background: 'linear-gradient(135deg, rgba(108,99,255,0.3), transparent)', borderRadius: 9999, marginBottom: '0.5rem' }} />
+              <div style={{ width: '80%', height: 6, background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), transparent)', borderRadius: 9999, marginBottom: '0.5rem' }} />
               <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>ENTRANCE</div>
 
               {rows.map(row => {
@@ -230,7 +284,7 @@ export default function SeatsPage() {
       {sections.find(s => s._id === activeSection) && (
         <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {sections.find(s => s._id === activeSection)?.amenities?.map(a => (
-            <span key={a} style={{ padding: '0.2rem 0.7rem', borderRadius: 9999, background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', fontSize: '0.75rem', color: '#a78bfa' }}>
+            <span key={a} style={{ padding: '0.2rem 0.7rem', borderRadius: 9999, background: 'rgba(37, 99, 235, 0.06)', border: '1px solid rgba(37, 99, 235, 0.15)', fontSize: '0.75rem', color: 'var(--accent)' }}>
               {a.replace('_', ' ')}
             </span>
           ))}
@@ -265,8 +319,8 @@ export default function SeatsPage() {
                 <input className="input" type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} min={startTime} />
               </div>
 
-              <div style={{ background: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', border: '1px solid rgba(108,99,255,0.15)' }}>
-                ⚡ Max 4 hours · Min 30 min · Auto-cancelled if no check-in within 15 min
+              <div style={{ background: 'rgba(37, 99, 235, 0.04)', borderRadius: 10, padding: '0.75rem 1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+                ⚡ Max 3 hours · Min 30 min · Auto-cancelled if no check-in within 15 min
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem' }}>

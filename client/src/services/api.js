@@ -51,6 +51,8 @@ export const bookingsAPI = {
   getById: (id) => api.get(`/bookings/${id}`),
   cancel: (id, reason) => api.delete(`/bookings/${id}`, { data: { reason } }),
   checkIn: (id) => api.post(`/bookings/${id}/checkin`),
+  checkOut: (id) => api.post(`/bookings/${id}/checkout`),
+  payFine: (id) => api.post(`/bookings/${id}/pay-fine`),
 };
 
 // Admin

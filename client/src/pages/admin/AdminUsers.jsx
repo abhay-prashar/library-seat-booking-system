@@ -48,7 +48,7 @@ export default function AdminUsers() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {['', 'blocked'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: filter === f ? '#6c63ff' : 'var(--border)', background: filter === f ? 'rgba(108,99,255,0.15)' : 'transparent', color: filter === f ? '#a78bfa' : 'var(--text-secondary)' }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: '0.35rem 0.85rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.8rem', borderColor: filter === f ? 'var(--accent)' : 'var(--border)', background: filter === f ? 'rgba(37,99,235,0.08)' : 'transparent', color: filter === f ? 'var(--accent)' : 'var(--text-secondary)' }}>
               {f || 'All'}{f === 'blocked' ? ' (blocked)' : ''}
             </button>
           ))}
@@ -77,7 +77,7 @@ export default function AdminUsers() {
               <tr key={u._id}>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: u.isBlocked ? 'rgba(239,68,68,0.2)' : 'rgba(108,99,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem', color: u.isBlocked ? '#ef4444' : '#a78bfa', flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: u.isBlocked ? 'rgba(239,68,68,0.1)' : 'rgba(37,99,235,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem', color: u.isBlocked ? '#ef4444' : 'var(--accent)', flexShrink: 0 }}>
                       {u.name[0].toUpperCase()}
                     </div>
                     <span style={{ fontWeight: 500 }}>{u.name}</span>
@@ -109,7 +109,7 @@ export default function AdminUsers() {
       {pages > 1 && (
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem' }}>
           {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
-            <button key={p} onClick={() => load(p)} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: '0.82rem', borderColor: page === p ? '#6c63ff' : 'var(--border)', background: page === p ? 'rgba(108,99,255,0.15)' : 'transparent', color: page === p ? '#a78bfa' : 'var(--text-secondary)' }}>
+            <button key={p} onClick={() => load(p)} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: '0.82rem', borderColor: page === p ? 'var(--accent)' : 'var(--border)', background: page === p ? 'rgba(37,99,235,0.08)' : 'transparent', color: page === p ? 'var(--accent)' : 'var(--text-secondary)' }}>
               {p}
             </button>
           ))}

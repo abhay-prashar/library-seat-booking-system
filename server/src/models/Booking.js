@@ -45,6 +45,22 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    checkOutTime: {
+      type: Date,
+      default: null,
+    },
+    fineAmount: {
+      type: Number,
+      default: 0,
+    },
+    fineReason: {
+      type: String,
+      default: null,
+    },
+    finePaid: {
+      type: Boolean,
+      default: false,
+    },
     cancelledBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

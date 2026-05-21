@@ -27,13 +27,24 @@ const createBooking = async ({ userId, seatId, startTime, endTime }) => {
     if (start < now) throw new AppError('Start time cannot be in the past.', 400);
     if (end <= start) throw new AppError('End time must be after start time.', 400);
     const diffHours = (end - start) / 1000 / 3600;
-    if (diffHours > 4) throw new AppError('Maximum booking duration is 4 hours.', 400);
+    if (diffHours > 3) throw new AppError('Maximum booking duration is 3 hours.', 400);
     if (diffHours < 0.5) throw new AppError('Minimum booking duration is 30 minutes.', 400);
 
     // Check user doesn't already have an active booking
     const user = await User.findById(userId).session(session);
     if (!user) throw new AppError('User not found.', 404);
     if (user.isBlocked) throw new AppError('Your account is blocked.', 403);
+
+    // Check for unpaid fines
+    const unpaidFinesCount = await Booking.countDocuments({
+      user: userId,
+      fineAmount: { $gt: 0 },
+      finePaid: false,
+    }).session(session);
+    if (unpaidFinesCount > 0) {
+      throw new AppError('You have outstanding unpaid fines. Please pay them before booking another seat.', 403);
+    }
+
     if (user.activeBooking) {
       throw new AppError('You already have an active booking. Cancel it before making a new one.', 409);
     }
@@ -187,4 +198,59 @@ const checkIn = async ({ bookingId, userId }) => {
   return booking;
 };
 
-module.exports = { createBooking, cancelBooking, checkIn };
+/**
+ * Check-out from an active booking.
+ */
+const checkOut = async ({ bookingId, userId }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction({ writeConcern: { w: 'majority' } });
+
+  try {
+    const booking = await Booking.findById(bookingId).session(session);
+    if (!booking) throw new AppError('Booking not found.', 404);
+
+    if (booking.user.toString() !== userId.toString()) {
+      throw new AppError('You are not authorized to check out of this booking.', 403);
+    }
+
+    if (booking.status !== 'active') {
+      throw new AppError(`Cannot check out. Booking status is: ${booking.status}.`, 400);
+    }
+
+    if (!booking.checkInTime) {
+      throw new AppError('Cannot check out. You must check in first.', 400);
+    }
+
+    booking.status = 'completed';
+    booking.checkOutTime = new Date();
+    await booking.save({ session });
+
+    // Free the seat
+    await Seat.findByIdAndUpdate(
+      booking.seat,
+      { $set: { isAvailable: true, currentBooking: null } },
+      { session }
+    );
+
+    // Clear user's active booking
+    await User.findByIdAndUpdate(
+      booking.user,
+      { $set: { activeBooking: null } },
+      { session }
+    );
+
+    await session.commitTransaction();
+
+    emitSeatUpdate({ type: 'AVAILABLE', seatId: booking.seat.toString() });
+
+    logger.info(`Check-out: booking ${bookingId} by user ${userId}`);
+    return booking;
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
+};
+
+module.exports = { createBooking, cancelBooking, checkIn, checkOut };

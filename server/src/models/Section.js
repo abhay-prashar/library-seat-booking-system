@@ -26,6 +26,4 @@ const sectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-sectionSchema.index({ name: 1 });
-
 module.exports = mongoose.model('Section', sectionSchema);

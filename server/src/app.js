@@ -23,14 +23,14 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 100 : 10000, // Relaxed in development
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 app.use('/api/', limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000, // Relaxed in development
   message: { success: false, message: 'Too many auth attempts, please try again later.' },
 });
 app.use('/api/auth/', authLimiter);

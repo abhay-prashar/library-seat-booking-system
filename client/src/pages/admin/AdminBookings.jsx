@@ -51,9 +51,9 @@ export default function AdminBookings() {
           {['', 'active', 'cancelled', 'expired', 'no_show', 'completed'].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
               style={{ padding: '0.3rem 0.75rem', borderRadius: 9999, border: '1px solid', cursor: 'pointer', fontSize: '0.78rem', transition: 'all 0.15s',
-                borderColor: statusFilter === s ? '#6c63ff' : 'var(--border)',
-                background: statusFilter === s ? 'rgba(108,99,255,0.15)' : 'transparent',
-                color: statusFilter === s ? '#a78bfa' : 'var(--text-secondary)',
+                borderColor: statusFilter === s ? 'var(--accent)' : 'var(--border)',
+                background: statusFilter === s ? 'rgba(37,99,235,0.08)' : 'transparent',
+                color: statusFilter === s ? 'var(--accent)' : 'var(--text-secondary)',
               }}>
               {s || 'All'}
             </button>
@@ -115,9 +115,9 @@ export default function AdminBookings() {
           {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
             <button key={p} onClick={() => fetch(p)}
               style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: '0.82rem',
-                borderColor: page === p ? '#6c63ff' : 'var(--border)',
-                background: page === p ? 'rgba(108,99,255,0.15)' : 'transparent',
-                color: page === p ? '#a78bfa' : 'var(--text-secondary)',
+                borderColor: page === p ? 'var(--accent)' : 'var(--border)',
+                background: page === p ? 'rgba(37,99,235,0.08)' : 'transparent',
+                color: page === p ? 'var(--accent)' : 'var(--text-secondary)',
               }}>
               {p}
             </button>

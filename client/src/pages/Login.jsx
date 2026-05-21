@@ -27,17 +27,13 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      {/* Background orbs */}
-      <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'fixed', bottom: '-20%', left: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
       <div className="glass-card fade-in" style={{ width: '100%', maxWidth: 420, padding: '2.5rem' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ width: 56, height: 56, background: 'linear-gradient(135deg, #6c63ff, #a78bfa)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+          <div style={{ width: 56, height: 56, background: 'var(--accent)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
             <BookOpen size={28} color="white" />
           </div>
-          <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 700 }}>LibraryDesk</h1>
+          <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 700 }}>BookMySeat</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.25rem' }}>Sign in to your account</p>
         </div>
 
@@ -66,15 +62,8 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Demo credentials */}
-        <div style={{ marginTop: '1.5rem', padding: '0.85rem', background: 'rgba(108,99,255,0.08)', borderRadius: 10, border: '1px solid rgba(108,99,255,0.2)' }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demo Accounts</p>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Student: <span style={{ color: '#a78bfa' }}>student@library.edu</span> / Student@1234</p>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)', marginTop: '0.25rem' }}>Admin: <span style={{ color: '#a78bfa' }}>admin@library.edu</span> / Admin@1234</p>
-        </div>
-
-        <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-          Don&apos;t have an account? <Link to="/register" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: 500 }}>Register</Link>
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          Don&apos;t have an account? <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Register</Link>
         </p>
       </div>
     </div>

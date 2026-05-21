@@ -3,11 +3,11 @@ import { adminAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Armchair, CalendarDays, Users, TrendingUp, Activity } from 'lucide-react';
 
-const StatCard = ({ icon: Icon, label, value, sub, color = '#6c63ff' }) => (
+const StatCard = ({ icon: Icon, label, value, sub, color = '#2563eb' }) => (
   <div className="stat-card">
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Icon size={18} color={color} />
       </div>
     </div>
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   const { seats, bookings, users } = analytics;
   const occupancy = seats.total ? Math.round((seats.occupied / seats.total) * 100) : 0;
 
-  const statusColors = { active: '#6c63ff', completed: '#60a5fa', cancelled: '#ef4444', expired: '#94a3b8', no_show: '#f59e0b' };
+  const statusColors = { active: '#2563eb', completed: '#10b981', cancelled: '#ef4444', expired: '#64748b', no_show: '#f59e0b' };
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -44,9 +44,9 @@ export default function AdminDashboard() {
 
       {/* Stats grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <StatCard icon={Armchair} label="Total Seats" value={seats.total} sub={`${seats.available} available`} color="#6c63ff" />
+        <StatCard icon={Armchair} label="Total Seats" value={seats.total} sub={`${seats.available} available`} color="#2563eb" />
         <StatCard icon={Activity} label="Occupied Now" value={seats.occupied} sub={`${occupancy}% occupancy`} color="#ef4444" />
-        <StatCard icon={CalendarDays} label="Today's Bookings" value={bookings.today} sub={`${bookings.thisWeek} this week`} color="#22c55e" />
+        <StatCard icon={CalendarDays} label="Today's Bookings" value={bookings.today} sub={`${bookings.thisWeek} this week`} color="#10b981" />
         <StatCard icon={Users} label="Students" value={users.total} sub={`${users.blocked} blocked`} color="#f59e0b" />
       </div>
 
@@ -54,10 +54,10 @@ export default function AdminDashboard() {
       <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <h3 style={{ fontWeight: 600 }}>Current Occupancy</h3>
-          <span style={{ fontSize: '1.5rem', fontWeight: 700, color: occupancy > 80 ? '#ef4444' : occupancy > 50 ? '#f59e0b' : '#22c55e' }}>{occupancy}%</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: 700, color: occupancy > 80 ? 'var(--accent-red)' : occupancy > 50 ? 'var(--accent-yellow)' : 'var(--accent-green)' }}>{occupancy}%</span>
         </div>
-        <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 9999, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${occupancy}%`, background: `linear-gradient(90deg, #6c63ff, ${occupancy > 80 ? '#ef4444' : '#a78bfa'})`, borderRadius: 9999, transition: 'width 0.5s ease' }} />
+        <div style={{ height: 10, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${occupancy}%`, background: occupancy > 80 ? 'var(--accent-red)' : 'var(--accent)', borderRadius: 9999, transition: 'width 0.5s ease' }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           <span>{seats.occupied} occupied</span>
@@ -78,8 +78,8 @@ export default function AdminDashboard() {
                   <span style={{ textTransform: 'capitalize', color: statusColors[status] || 'var(--text-secondary)' }}>{status.replace('_', ' ')}</span>
                   <span style={{ color: 'var(--text-secondary)' }}>{count} ({pct}%)</span>
                 </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 9999, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${pct}%`, background: statusColors[status] || '#6c63ff', borderRadius: 9999, transition: 'width 0.5s' }} />
+                <div style={{ height: 6, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: statusColors[status] || 'var(--accent)', borderRadius: 9999, transition: 'width 0.5s' }} />
                 </div>
               </div>
             );
