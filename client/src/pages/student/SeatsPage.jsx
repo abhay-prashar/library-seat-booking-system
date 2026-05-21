@@ -104,7 +104,9 @@ export default function SeatsPage() {
   const handleBook = async () => {
     setBooking(true);
     try {
-      await bookingsAPI.create({ seatId: selected._id, startTime, endTime });
+      const utcStartTime = new Date(startTime).toISOString();
+      const utcEndTime = new Date(endTime).toISOString();
+      await bookingsAPI.create({ seatId: selected._id, startTime: utcStartTime, endTime: utcEndTime });
       toast.success(`Seat ${selected.seatNumber} booked!`);
       setModal(false);
       await fetchData();
