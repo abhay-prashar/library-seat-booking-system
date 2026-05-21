@@ -7,7 +7,21 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: (origin, callback) => {
+        const allowedOrigins = [
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'http://127.0.0.1:5173',
+        ];
+        if (process.env.CLIENT_URL) {
+          allowedOrigins.push(process.env.CLIENT_URL);
+        }
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+          return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },
