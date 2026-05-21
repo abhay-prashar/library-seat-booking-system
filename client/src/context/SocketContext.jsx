@@ -10,7 +10,10 @@ export const SocketProvider = ({ children }) => {
   const connect = (token) => {
     if (socketRef.current?.connected) return;
 
-    socketRef.current = io('/', {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 
+      (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : '/');
+
+    socketRef.current = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
